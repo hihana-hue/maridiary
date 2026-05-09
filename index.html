@@ -19,6 +19,7 @@
   .title { font-size: 22px; font-weight: 900; color: #f9fafb; letter-spacing: -0.5px; }
   .subtitle { font-size: 12px; color: #6b7280; margin-top: 2px; }
 
+  /* 로그인 */
   .login-section { display: flex; flex-direction: column; gap: 20px; }
   .login-label { font-size: 13px; color: #9ca3af; margin-bottom: 8px; }
   .user-btns { display: flex; gap: 10px; }
@@ -26,7 +27,7 @@
   .user-btn .user-emoji { font-size: 28px; }
   .user-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #f9fafb; }
   .user-btn.selected-mountain { border-color: #6366f1; background: rgba(99,102,241,0.15); color: #a5b4fc; }
-  .user-btn.selected-river { border-color: #22c55e; background: rgba(34,197,94,0.12); color: #86efac; }
+  .user-btn.selected-river    { border-color: #22c55e; background: rgba(34,197,94,0.12);  color: #86efac; }
 
   .pw-input-row { display: flex; gap: 10px; }
   .pw-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; color: #f9fafb; font-size: 22px; letter-spacing: 8px; outline: none; text-align: center; font-family: monospace; width: 100%; }
@@ -34,13 +35,19 @@
   .pw-input::placeholder { letter-spacing: 2px; font-size: 13px; color: #4b5563; font-family: 'Noto Sans KR', sans-serif; }
   .login-btn { padding: 14px 18px; border-radius: 12px; border: none; background: #6366f1; color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; white-space: nowrap; }
   .login-btn:hover { background: #4f46e5; }
+
+  .remember-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .remember-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #6366f1; cursor: pointer; flex-shrink: 0; }
+  .remember-row label { font-size: 12px; color: #6b7280; cursor: pointer; }
+
   .error-msg { font-size: 12px; color: #ef4444; text-align: center; min-height: 18px; margin-top: 4px; }
 
+  /* 앱 */
   .app-section { display: none; flex-direction: column; }
   .badge-row { display: flex; align-items: center; margin-bottom: 16px; }
   .user-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; }
   .badge-mountain { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
-  .badge-river { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+  .badge-river    { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
   .logout-btn { background: none; border: none; color: #4b5563; font-size: 11px; cursor: pointer; margin-left: auto; font-family: 'Noto Sans KR', sans-serif; padding: 4px 8px; border-radius: 6px; }
   .logout-btn:hover { color: #9ca3af; }
 
@@ -49,6 +56,7 @@
   .balance-box-river    { background: rgba(34,197,94,0.07);  border: 1px solid rgba(34,197,94,0.18); }
   .balance-label { font-size: 12px; color: #9ca3af; margin-bottom: 6px; letter-spacing: 1px; }
   .balance-amount { font-size: 32px; font-weight: 900; letter-spacing: -1px; transition: color 0.3s; }
+  .balance-loading { font-size: 13px; color: #6b7280; margin-top: 4px; }
 
   .toggle-wrap { display: flex; gap: 10px; margin-bottom: 20px; }
   .toggle-btn { flex: 1; padding: 12px 0; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.2s ease; font-family: 'Noto Sans KR', sans-serif; }
@@ -84,6 +92,9 @@
   @keyframes fadeSlideItem { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn        { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .app-section { animation: fadeIn 0.4s ease; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -118,6 +129,10 @@
         <input class="pw-input" type="password" id="pw-input" placeholder="비밀번호" maxlength="10" onkeydown="if(event.key==='Enter') doLogin()" />
         <button class="login-btn" onclick="doLogin()">입장 →</button>
       </div>
+      <div class="remember-row">
+        <input type="checkbox" id="remember-check" />
+        <label for="remember-check">이 기기에서 자동 로그인</label>
+      </div>
       <div class="error-msg" id="error-msg"></div>
     </div>
   </div>
@@ -130,8 +145,9 @@
     </div>
 
     <div class="balance-box" id="balance-box">
-      <div class="balance-label">현재 잔액</div>
+      <div class="balance-label">누적 잔액</div>
       <div class="balance-amount" id="balance">0원</div>
+      <div class="balance-loading" id="balance-loading"></div>
     </div>
 
     <div class="toggle-wrap">
@@ -157,6 +173,7 @@
   const NOTION_KEY     = "ntn_n89544272526ViG5XsMplqqR1AFDtciLdZqrQbZus5x4Hu";
   const NOTION_VERSION = "2022-06-28";
   const PROXY          = "https://corsproxy.io/?";
+  const STORAGE_KEY    = "maridiary_autologin";
 
   const USERS = {
     mountain: {
@@ -183,6 +200,20 @@
 
   document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
+  /* ── 자동 로그인 체크 ── */
+  window.addEventListener("load", () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { user } = JSON.parse(saved);
+        if (user && USERS[user]) {
+          selectedUser = user;
+          loginUser(user);
+        }
+      }
+    } catch(e) {}
+  });
+
   /* ── 로그인 ── */
   function selectUser(user) {
     selectedUser = user;
@@ -197,8 +228,19 @@
     if (!selectedUser)   { setError("먼저 이름을 선택해줘!"); return; }
     if (pw !== PASSWORD) { setError("비밀번호가 틀렸어! 🔒"); document.getElementById("pw-input").value = ""; return; }
 
-    loggedInUser = selectedUser;
-    const u = USERS[loggedInUser];
+    // 자동 로그인 저장
+    if (document.getElementById("remember-check").checked) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: selectedUser }));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    loginUser(selectedUser);
+  }
+
+  async function loginUser(user) {
+    loggedInUser = user;
+    const u = USERS[user];
 
     const badge = document.getElementById("user-badge");
     badge.textContent = u.label;
@@ -211,17 +253,23 @@
 
     document.getElementById("login-section").style.display = "none";
     document.getElementById("app-section").style.display   = "flex";
+
+    // 노션에서 누적 잔액 불러오기
+    await loadBalanceFromNotion();
   }
 
   function doLogout() {
+    localStorage.removeItem(STORAGE_KEY);
     loggedInUser = null; selectedUser = null;
     currentBalance = 0; entries = [];
     document.getElementById("pw-input").value              = "";
+    document.getElementById("remember-check").checked      = false;
     document.getElementById("btn-mountain").className      = "user-btn";
     document.getElementById("btn-river").className         = "user-btn";
     document.getElementById("error-msg").textContent       = "";
     document.getElementById("history").innerHTML           = "";
     document.getElementById("header-subtitle").textContent = "노션에 바로 저장돼";
+    document.getElementById("balance-loading").textContent = "";
     updateBalance();
     document.getElementById("app-section").style.display   = "none";
     document.getElementById("login-section").style.display = "flex";
@@ -231,6 +279,55 @@
     const el = document.getElementById("error-msg");
     el.textContent = msg;
     setTimeout(() => { el.textContent = ""; }, 2500);
+  }
+
+  /* ── 노션에서 누적 잔액 불러오기 ── */
+  async function loadBalanceFromNotion() {
+    const loadingEl = document.getElementById("balance-loading");
+    loadingEl.innerHTML = '<span class="spinner"></span>잔액 불러오는 중...';
+
+    try {
+      const dbId = USERS[loggedInUser].dbId;
+      const url  = PROXY + encodeURIComponent(`https://api.notion.com/v1/databases/${dbId}/query`);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + NOTION_KEY,
+          "Content-Type": "application/json",
+          "Notion-Version": NOTION_VERSION
+        },
+        body: JSON.stringify({
+          sorts: [{ timestamp: "created_time", direction: "descending" }],
+          page_size: 1
+        })
+      });
+
+      if (!response.ok) throw new Error("노션 오류");
+
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        // 가장 최근 항목의 잔액을 가져옴
+        const latestPage = data.results[0];
+        const latestBalance = latestPage.properties["잔액"]?.number ?? 0;
+        currentBalance = latestBalance;
+        updateBalance();
+        loadingEl.textContent = "✅ 노션에서 잔액 불러옴";
+        setTimeout(() => { loadingEl.textContent = ""; }, 2000);
+      } else {
+        // 기록이 없으면 0원
+        currentBalance = 0;
+        updateBalance();
+        loadingEl.textContent = "첫 번째 기록을 시작해봐! 🎉";
+        setTimeout(() => { loadingEl.textContent = ""; }, 2500);
+      }
+    } catch(e) {
+      loadingEl.textContent = "잔액 불러오기 실패 (0원으로 시작)";
+      currentBalance = 0;
+      updateBalance();
+      setTimeout(() => { loadingEl.textContent = ""; }, 2500);
+    }
   }
 
   /* ── 앱 기능 ── */
@@ -321,7 +418,7 @@
         body: JSON.stringify({
           parent: { database_id: dbId },
           properties: {
-            "내용": { title: [{ text: { content: content } }] },
+            "내용": { title:  [{ text: { content: content } }] },
             "유형": { select: { name: currentType } },
             "금액": { number: amount },
             "날짜": { date:   { start: date } },
@@ -330,11 +427,7 @@
         })
       });
 
-      if (!response.ok) {
-        const err = await response.json();
-        console.error(err);
-        throw new Error("노션 오류");
-      }
+      if (!response.ok) throw new Error("노션 오류");
 
       currentBalance = newBalance;
       entries.unshift({ content, type: currentType, amount, date, balance: newBalance });
@@ -343,9 +436,8 @@
       document.getElementById("content").value = "";
       document.getElementById("amount").value  = "";
       document.getElementById("date").value    = new Date().toISOString().split("T")[0];
-      showToast(USERS[loggedInUser].label + " 노션에 저장 완료! 📒");
-    } catch (e) {
-      console.error(e);
+      showToast(USERS[loggedInUser].label + " 저장 완료! 📒");
+    } catch(e) {
       showToast("저장 실패. 다시 시도해봐!", false);
     }
 
